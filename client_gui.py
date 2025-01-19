@@ -135,8 +135,68 @@ class GameClient(QMainWindow):
         event.accept()
 
 
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QMessageBox, QHBoxLayout,
+)
+from PyQt5.QtGui import QPixmap, QIcon, QFont
+from PyQt5.QtCore import Qt
+import socket
+import threading
+from PyQt5.QtCore import QSize
+
+
+class StartMenu(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Pierre-Papier-Ciseaux - Menu")
+        self.setGeometry(100, 100, 600, 400)
+
+        self.layout = QVBoxLayout()
+
+        # Title Label
+        self.title_label = QLabel("Pierre-Papier-Ciseaux", self)
+        self.title_label.setAlignment(Qt.AlignCenter)
+        self.title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
+        self.layout.addWidget(self.title_label)
+
+        # Image Label
+        self.image_label = QLabel(self)
+        self.image_label.setAlignment(Qt.AlignCenter)
+
+        # Load the image
+        pixmap = QPixmap("rock-paper-scissors-game-rules.png")
+        if not pixmap.isNull():
+            # Scale the image to fit within the window
+            scaled_pixmap = pixmap.scaled(400, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.image_label.setPixmap(scaled_pixmap)
+        else:
+            self.image_label.setText("Image not found!")
+
+        self.layout.addWidget(self.image_label)
+
+        # Start Game Button
+        self.start_button = QPushButton("Start Game", self)
+        self.start_button.clicked.connect(self.start_game)
+        self.layout.addWidget(self.start_button)
+
+        # Quit Button
+        self.quit_button = QPushButton("Quit", self)
+        self.quit_button.clicked.connect(self.close)
+        self.layout.addWidget(self.quit_button)
+
+        # Main Container
+        container = QWidget()
+        container.setLayout(self.layout)
+        self.setCentralWidget(container)
+
+    def start_game(self):
+        """Open the GameClient window and close the StartMenu."""
+        self.game_client = GameClient()
+        self.game_client.show()
+        self.close()
+
 if __name__ == "__main__":
     app = QApplication([])
-    client = GameClient()
-    client.show()
+    menu = StartMenu()  # Create the StartMenu instance
+    menu.show()         # Show the StartMenu
     app.exec_()
