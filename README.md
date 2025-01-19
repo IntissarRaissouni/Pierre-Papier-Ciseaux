@@ -19,17 +19,17 @@ This project is a networked implementation of the classic Rock-Paper-Scissors ga
 - Open a terminal and navigate to the server script directory.
 - Run the server script:
   ```bash
-  python server_script.py
+  python server.py
   ```
-  Replace `server_script.py` with the actual filename if different.
+ 
 
 #### 2. Start the Client
 - Open another terminal and navigate to the client script directory.
 - Run the client application:
   ```bash
-  python client_script.py
+  python client_gui.py
   ```
-  Replace `client_script.py` with the actual filename if different.
+ 
 
 - The client GUI will appear. Click "Start Game" to connect to the server.
 
@@ -54,12 +54,12 @@ This project is a networked implementation of the classic Rock-Paper-Scissors ga
 
 ### Files and Resources
 #### Client Files:
-- `client_script.py`: The PyQt5-based GUI client.
+- `client_gui.py`: The PyQt5-based GUI client.
 - `rock-paper-scissors-game-rules.png`: Rules image displayed in the start menu.
 - `icon-rock.svg`, `icon-paper.svg`, `icon-scissors.svg`: SVG icons for the choice buttons.
 
 #### Server Files:
-- `server_script.py`: The server script handling game logic and networking.
+- `server.py`: The server script handling game logic and networking.
 
 ### Screenshots
 #### Main Menu:
