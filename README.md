@@ -66,10 +66,10 @@ This project is a networked implementation of the classic Rock-Paper-Scissors ga
 ![Main Menu](menu.png)
 
 #### Gameplay:
-![Gameplay](path/to/play.png)
+![Gameplay](play.png)
 
 #### Game Results:
-![Game Results](path/to/result.png)
+![Game Results](result.png)
 
 ### Contributing
 Contributions are welcome! If you find any issues or want to add new features, please open an issue or submit a pull request.
