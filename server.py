@@ -1,8 +1,6 @@
 import socket
 import threading
-
-# Thread-safe lock for accessing shared resources
-clients_lock = threading.Lock()
+import queue
 
 # Function to determine the winner of the game
 def determine_winner(choice1, choice2):
@@ -17,20 +15,58 @@ def determine_winner(choice1, choice2):
     else:
         return -1  # Player 2 wins
 
+# Shared resources
+client_sockets = []
+choice_queue = queue.Queue()
+scores = {}
+
+# Function to handle the game logic
+def game_loop():
+    while True:
+        if len(client_sockets) < 2:
+            continue  # Wait for two clients
+
+        # Collect choices from both clients
+        choices = []
+        try:
+            for _ in range(2):
+                choice = choice_queue.get()
+                choices.append(choice)
+        except queue.Empty:
+            continue  # Not enough choices yet
+
+        # Determine the winner
+        result = determine_winner(choices[0], choices[1])
+
+        # Update scores
+        if result == 1:
+            scores[client_sockets[0]] += 1
+        elif result == -1:
+            scores[client_sockets[1]] += 1
+
+        # Prepare result messages
+        if result == 0:
+            msg = f"It's a tie! Both chose {choices[0].capitalize()}!\n"
+        elif result == 1:
+            msg = f"Player 1 wins! {choices[0].capitalize()} beats {choices[1].capitalize()}!\n"
+        else:
+            msg = f"Player 2 wins! {choices[1].capitalize()} beats {choices[0].capitalize()}!\n"
+
+        # Send results to both clients
+        for sock in client_sockets:
+            score = scores.get(sock, 0)
+            sock.send(f"{msg}Score: {score}\n".encode())
+
 # Function to handle each client connection
-def handle_client(client_socket, client_address, clients, scores):
-    print(f"[SERVER] New connection from {client_address}")
-
-    # Send welcome message to the client
+def handle_client(client_socket):
     client_socket.send(b"Welcome to Pierre-Papier-Ciseaux! Waiting for another player...\n")
-
-    # Wait until two players are connected
-    while len(clients) < 2:
-        pass
+    client_sockets.append(client_socket)
+    scores[client_socket] = 0
 
     # Notify both players that the game is starting
-    if len(clients) == 2:
-        client_socket.send(b"Both players connected!\n")
+    if len(client_sockets) == 2:
+        for sock in client_sockets:
+            sock.send(b"Both players connected!\n")
 
     while True:
         try:
@@ -43,49 +79,16 @@ def handle_client(client_socket, client_address, clients, scores):
                 client_socket.send(b"Invalid choice. Try again.\n")
                 continue
 
-            # Update the client's choice in the shared dictionary
-            with clients_lock:
-                clients[client_address] = player_choice
-
-            # Wait for both players to submit their choices
-            while len(clients) < 2 or None in clients.values():
-                pass
-
-            # Determine the opponent's choice
-            with clients_lock:
-                opponent_address = [addr for addr in clients if addr != client_address][0]
-                opponent_choice = clients[opponent_address]
-
-            # Determine the result of the game
-            result = determine_winner(player_choice, opponent_choice)
-
-            # Update scores and prepare the result message
-            if result == 0:
-                message = f"It's a tie! Both chose {player_choice.capitalize()}!\n"
-            elif result == 1:
-                scores[client_address] += 1
-                message = f"You win! {player_choice.capitalize()} beats {opponent_choice.capitalize()}!\n"
-            else:
-                scores[opponent_address] += 1
-                message = f"You lose! {opponent_choice.capitalize()} beats {player_choice.capitalize()}!\n"
-
-            # Send the result and score in a single message
-            client_socket.send(f"{message}Score:{scores[client_address]}\n".encode())
-
-            # Reset choices for the next round
-            with clients_lock:
-                clients[client_address] = None
-                clients[opponent_address] = None
-
-            # Exit if both players choose to exit
-            if all(value == "exit" for value in clients.values()):
-                break
+            # Add the choice to the queue
+            choice_queue.put(player_choice)
 
         except ConnectionError:
-            print(f"[SERVER] Connection lost with {client_address}")
+            print(f"[SERVER] Connection lost with {client_socket.getpeername()}")
             break
 
-    # Close the client socket
+    # Remove the client from the list and scores
+    client_sockets.remove(client_socket)
+    del scores[client_socket]
     client_socket.close()
 
 # Main server function
@@ -95,28 +98,17 @@ def main():
     server.listen(2)
     print("[SERVER] Server is running and waiting for connections...")
 
-    clients = {}
-    scores = {}
-    threads = []
+    # Start the game loop in a separate thread
+    game_thread = threading.Thread(target=game_loop)
+    game_thread.start()
 
     while True:
         client_socket, client_address = server.accept()
-        with clients_lock:
-            clients[client_address] = None
-            scores[client_address] = 0
+        print(f"[SERVER] New connection from {client_address}")
 
         # Start a new thread to handle the client
-        thread = threading.Thread(target=handle_client, args=(client_socket, client_address, clients, scores))
-        thread.start()
-        threads.append(thread)
-
-        # Notify when two players are connected
-        if len(clients) == 2:
-            print("[SERVER] Both players connected. Let the game begin!")
-
-    # Wait for all threads to finish
-    for thread in threads:
-        thread.join()
+        client_thread = threading.Thread(target=handle_client, args=(client_socket,))
+        client_thread.start()
 
 if __name__ == "__main__":
     main()
