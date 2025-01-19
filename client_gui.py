@@ -55,6 +55,7 @@ class StartMenu(QMainWindow):
         self.close()
 
 # Game Client class
+# Game Client class
 class GameClient(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -69,10 +70,22 @@ class GameClient(QMainWindow):
         """)
 
         layout = QVBoxLayout()
+
+        # Create a horizontal layout for status and player labels
+        status_layout = QHBoxLayout()
         self.status_label = QLabel("Status: Disconnected", self)
-        self.status_label.setAlignment(Qt.AlignCenter)
         self.status_label.setStyleSheet("color: #FF6347; font-size: 24px; font-weight: bold;")
-        layout.addWidget(self.status_label)
+        status_layout.addWidget(self.status_label)
+
+        # Add stretchable space to center player_label
+        status_layout.addStretch()
+        self.player_label = QLabel("", self)
+        self.player_label.setAlignment(Qt.AlignCenter)
+        self.player_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333333;")
+        status_layout.addWidget(self.player_label)
+
+        # Add the status layout to the main layout
+        layout.addLayout(status_layout)
 
         self.score_label = QLabel("Score: 0", self)
         self.score_label.setAlignment(Qt.AlignCenter)
@@ -84,12 +97,7 @@ class GameClient(QMainWindow):
         self.result_label.setStyleSheet("font-size: 28px; font-weight: bold; color: #333333;")
         layout.addWidget(self.result_label)
 
-        # Player label at the top right
-        self.player_label = QLabel("", self)
-        self.player_label.setAlignment(Qt.AlignRight)
-        self.player_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333333;")
-        layout.addWidget(self.player_label, alignment=Qt.AlignTop | Qt.AlignRight)
-
+        # Choice buttons layout
         choice_layout = QHBoxLayout()
         choice_layout.setAlignment(Qt.AlignCenter)
 
