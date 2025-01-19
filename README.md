@@ -61,6 +61,16 @@ This project is a networked implementation of the classic Rock-Paper-Scissors ga
 #### Server Files:
 - `server_script.py`: The server script handling game logic and networking.
 
+### Screenshots
+#### Main Menu:
+![Main Menu](menu.png)
+
+#### Gameplay:
+![Gameplay](path/to/play.png)
+
+#### Game Results:
+![Game Results](path/to/result.png)
+
 ### Contributing
 Contributions are welcome! If you find any issues or want to add new features, please open an issue or submit a pull request.
 
