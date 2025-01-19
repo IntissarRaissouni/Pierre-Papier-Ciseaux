@@ -32,7 +32,7 @@ class StartMenu(QMainWindow):
             rules_image.setPixmap(pixmap)
             rules_image.setAlignment(Qt.AlignCenter)
             rules_image.setScaledContents(True)
-            rules_image.setFixedSize(600, 400)  # Adjust size as needed
+            rules_image.setFixedSize(800, 600)  # Adjust size as needed
             layout.addWidget(rules_image)
         else:
             print("Rules image not found.")
