@@ -63,6 +63,12 @@ def handle_client(client_socket):
     client_sockets.append(client_socket)
     scores[client_socket] = 0
 
+    # Assign player roles
+    if len(client_sockets) == 1:
+        client_socket.send(b"ROLE: Player 1\n")
+    elif len(client_sockets) == 2:
+        client_socket.send(b"ROLE: Player 2\n")
+        
     # Notify both players that the game is starting
     if len(client_sockets) == 2:
         for sock in client_sockets:

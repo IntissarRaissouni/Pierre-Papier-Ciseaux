@@ -3,7 +3,7 @@ import socket
 import threading
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QMessageBox, QHBoxLayout
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 
 # Start Menu class
 class StartMenu(QMainWindow):
@@ -14,7 +14,7 @@ class StartMenu(QMainWindow):
         self.setStyleSheet("""
             QMainWindow { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #FBFBFB, stop:1 #E8F9FF); }
             QLabel { font-size: 36px; font-family: 'Comic Sans MS'; font-weight: bold; color: #333333; }
-            QPushButton { font-size: 24px; font-family: 'Arial'; font-weight: bold; color: white; background-color: #C4D9FF; border-radius: 15px; padding: 20px; }
+            QPushButton { font-size: 24px; font-family: 'Arial'; font-weight: bold; color: white; background-color: #C4D9FF; border-radius: 15px; padding: 20px; margin: 10px; }
             QPushButton:hover { background-color: #C5BAFF; }
             QPushButton:pressed { background-color: #A8A3FF; }
         """)
@@ -24,6 +24,18 @@ class StartMenu(QMainWindow):
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setStyleSheet("font-size: 48px; font-weight: bold; color: #333333;")
         layout.addWidget(title_label)
+
+        # Add rules image
+        rules_image = QLabel(self)
+        pixmap = QPixmap("rock-paper-scissors-game-rules.png")
+        if not pixmap.isNull():
+            rules_image.setPixmap(pixmap)
+            rules_image.setAlignment(Qt.AlignCenter)
+            rules_image.setScaledContents(True)
+            rules_image.setFixedSize(600, 400)  # Adjust size as needed
+            layout.addWidget(rules_image)
+        else:
+            print("Rules image not found.")
 
         start_button = QPushButton("Start Game", self)
         start_button.clicked.connect(self.start_game)
@@ -50,8 +62,8 @@ class GameClient(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
         self.setStyleSheet("""
             QMainWindow { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #FBFBFB, stop:1 #E8F9FF); }
-            QLabel { font-size: 24px; font-family: 'Arial'; font-weight: bold; color: #333333; }
-            QPushButton { font-size: 18px; font-weight: bold; color: white; background-color: #C4D9FF; border-radius: 10px; padding: 15px; }
+            QLabel { font-size: 24px; font-family: 'Arial'; font-weight: bold; color: #333333; margin: 10px; }
+            QPushButton { font-size: 18px; font-weight: bold; color: white; background-color: #C4D9FF; border: 2px solid #A8A3FF; border-radius: 10px; padding: 15px; margin: 5px; }
             QPushButton:hover { background-color: #C5BAFF; }
             QPushButton:pressed { background-color: #A8A3FF; }
         """)
@@ -59,12 +71,12 @@ class GameClient(QMainWindow):
         layout = QVBoxLayout()
         self.status_label = QLabel("Status: Disconnected", self)
         self.status_label.setAlignment(Qt.AlignCenter)
-        self.status_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #FF6347;")
+        self.status_label.setStyleSheet("color: #FF6347; font-size: 24px; font-weight: bold;")
         layout.addWidget(self.status_label)
 
         self.score_label = QLabel("Score: 0", self)
         self.score_label.setAlignment(Qt.AlignCenter)
-        self.score_label.setStyleSheet("font-size: 36px; font-weight: bold; color: #C4D9FF;")
+        self.score_label.setStyleSheet("font-size: 36px; font-weight: bold; color: #C4D9FF; border: 1px solid #A8A3FF;")
         layout.addWidget(self.score_label)
 
         self.result_label = QLabel("Make your choice!", self)
@@ -72,21 +84,35 @@ class GameClient(QMainWindow):
         self.result_label.setStyleSheet("font-size: 28px; font-weight: bold; color: #333333;")
         layout.addWidget(self.result_label)
 
+        # Player label at the top right
+        self.player_label = QLabel("", self)
+        self.player_label.setAlignment(Qt.AlignRight)
+        self.player_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333333;")
+        layout.addWidget(self.player_label, alignment=Qt.AlignTop | Qt.AlignRight)
+
         choice_layout = QHBoxLayout()
         choice_layout.setAlignment(Qt.AlignCenter)
 
-        self.pierre_button = QPushButton(self)
-        self.pierre_button.setText(" Pierre ")
+        # Load SVG icons
+        rock_icon = QIcon("icon-rock.svg")
+        paper_icon = QIcon("icon-paper.svg")
+        scissors_icon = QIcon("icon-scissors.svg")
+
+        self.pierre_button = QPushButton("Pierre", self)
+        self.pierre_button.setIcon(rock_icon)
+        self.pierre_button.setIconSize(QSize(80, 80))
         self.pierre_button.clicked.connect(lambda: self.send_choice("pierre"))
         choice_layout.addWidget(self.pierre_button)
 
-        self.papier_button = QPushButton(self)
-        self.papier_button.setText(" Papier ")
+        self.papier_button = QPushButton("Papier", self)
+        self.papier_button.setIcon(paper_icon)
+        self.papier_button.setIconSize(QSize(80, 80))
         self.papier_button.clicked.connect(lambda: self.send_choice("papier"))
         choice_layout.addWidget(self.papier_button)
 
-        self.ciseaux_button = QPushButton(self)
-        self.ciseaux_button.setText(" Ciseaux ")
+        self.ciseaux_button = QPushButton("Ciseaux", self)
+        self.ciseaux_button.setIcon(scissors_icon)
+        self.ciseaux_button.setIconSize(QSize(80, 80))
         self.ciseaux_button.clicked.connect(lambda: self.send_choice("ciseaux"))
         choice_layout.addWidget(self.ciseaux_button)
 
@@ -101,6 +127,9 @@ class GameClient(QMainWindow):
         self.score = 0
 
         self.connect_to_server()
+
+    def set_player_label(self, role):
+        self.player_label.setText(role)
 
     def connect_to_server(self):
         try:
@@ -135,9 +164,12 @@ class GameClient(QMainWindow):
                 if not message:
                     break
 
-                # Check if the message contains the score
-                if "Score:" in message:
-                    # Extract the score and result from the message
+                if message.startswith("ROLE:"):
+                    # Set the player label
+                    role = message[len("ROLE:"):].strip()
+                    self.set_player_label(role)
+                elif "Score:" in message:
+                    # Extract score and result
                     parts = message.split("Score: ")
                     result_msg = parts[0].strip()
                     score_str = parts[1].strip().split("\n")[0]
